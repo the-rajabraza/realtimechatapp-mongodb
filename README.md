@@ -15,7 +15,7 @@ A real-time chat web application built with Flask, Flask-SocketIO, and Flask-MyS
 - Real-time messaging using WebSockets
 - User sessions with Flask session management
 - Room-based chat functionality
-- MySQL database integration
+- MongoDB database integration
 
 ## Technologies Used
 
