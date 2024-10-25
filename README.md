@@ -1,6 +1,6 @@
 # Real-Time Chat Web Application
 
-A real-time chat web application built with Flask, Flask-SocketIO, and Flask-MySQLdb. This project allows users to join rooms and communicate with each other in real-time.
+A real-time chat web application built with Flask, Flask-SocketIO, and Pymongo. This project allows users to join rooms and communicate with each other in real-time.
 
 ## Table of Contents
 
