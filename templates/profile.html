@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - Chat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1f2937',
+                        background: '#111827',
+                        text: '#e5e7eb',
+                    },
+                },
+            },
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="bg-background text-text">
+    <div class="container mx-auto max-w-md p-6 mt-20">
+        <h2 class="text-3xl font-bold mb-6 text-primary">User Profile</h2>
+        <form method="POST" class="space-y-4">
+            <div>
+                <label for="avatar" class="block text-sm font-medium text-gray-300">Avatar URL</label>
+                <input type="text" id="avatar" name="avatar" value="{{ profile[1] or '' }}"
+                       class="mt-1 block w-full p-2 bg-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <div>
+                <label for="status_message" class="block text-sm font-medium text-gray-300">Status Message</label>
+                <input type="text" id="status_message" name="status_message" value="{{ profile[2] or '' }}"
+                       class="mt-1 block w-full p-2 bg-secondary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+            <button type="submit"
+                    class="w-full bg-primary text-white p-3 rounded-lg hover:bg-blue-600 transition duration-300">
+                Update Profile
+            </button>
+        </form>
+        <div class="mt-4">
+            <a href="/users" class="text-primary hover:text-blue-400">Back to Users</a>
+        </div>
+    </div>
+</body>
+</html>

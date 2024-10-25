@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ partner }} - Chat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1f2937',
+                        background: '#111827',
+                        text: '#e5e7eb',
+                    },
+                },
+            },
+            darkMode: 'class',
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+</head>
+<body class="bg-background text-text">
+    <div class="container mx-auto max-w-2xl p-4 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-primary">Chat with {{ partner }}</h2>
+            <div class="flex flex-wrap justify-end gap-2 mb-2">
+                <button onclick="window.location.href='/users';"
+                        class="bg-primary text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition duration-300 text-sm sm:text-base">
+                    Back to Users
+                </button>
+                <button onclick="window.location.href='/profile';"
+                        class="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition duration-300 text-sm sm:text-base">
+                    Profile
+                </button>
+            </div>
+        </div>
+        <div id="partner-profile" class="mb-4 p-4 bg-secondary rounded-lg">
+            <img id="partner-avatar" src="" alt="{{ partner }}'s avatar" class="w-12 h-12 rounded-full inline-block mr-2">
+            <span id="partner-status" class="text-sm"></span>
+        </div>
+        <div class="bg-secondary rounded-lg p-4 h-[60vh] flex flex-col">
+            <div id="messages" class="flex-1 overflow-y-auto space-y-4 mb-4">
+                {% for message in messages %}
+                    <div class="flex {% if message['user1'] == username %}justify-end{% endif %}">
+                        <div class="max-w-[70%] p-3 rounded-lg {% if message['user1'] == username %}bg-blue-600 text-white{% else %}bg-gray-700{% endif %}">
+                            <p><strong>{{ message['user1'] }}:</strong> {{ message['message'] }}</p>
+                            <span class="text-xs text-gray-400 mt-1 block">{{ message['timestamp'].strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div id="typing-indicator" class="text-sm text-gray-400 mb-2 hidden">
+                <span id="typing-text"></span>
+            </div>
+            <div class="flex space-x-2 mt-2">
+                <input id="message" type="text" placeholder="Type your message..."
+                       class="flex-1 p-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-sm sm:text-base">
+                <button id="send"
+                        class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300 flex-shrink-0 text-sm sm:text-base">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const messages = document.getElementById('messages');
+        const partner = "{{ partner }}";
+        const username = "{{ username }}";
+        let typingTimer;
+        let isTyping = false;
+
+        socket.on('connect', function() {
+            socket.emit('join', {username: username});
+            socket.emit('get_user_profile', {username: partner});
+        });
+
+        document.getElementById('send').onclick = sendMessage;
+        document.getElementById('message').addEventListener('input', handleTyping);
+        document.getElementById('message').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function handleTyping() {
+            if (!isTyping) {
+                isTyping = true;
+                socket.emit('typing', {username: username, partner: partner, is_typing: true});
+            }
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                isTyping = false;
+                socket.emit('typing', {username: username, partner: partner, is_typing: false});
+            }, 2000);
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.emit('send_message', { message: message, username: username, partner: partner });
+                messageInput.value = '';
+                messages.scrollTop = messages.scrollHeight;
+                clearTimeout(typingTimer);
+                isTyping = false;
+                socket.emit('typing', {username: username, partner: partner, is_typing: false});
+            }
+        }
+
+        socket.on('receive_message', function(data) {
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const isCurrentUser = data.username === username;
+            const messageHtml = `
+                <div class="flex ${isCurrentUser ? 'justify-end' : ''}">
+                    <div class="max-w-[70%] p-3 rounded-lg ${isCurrentUser ? 'bg-blue-600 text-white' : 'bg-gray-700'}">
+                        <p><strong>${data.username}:</strong> ${data.message}</p>
+                        <span class="text-xs text-gray-400 mt-1 block">${timestamp}</span>
+                        <span class="text-xs text-gray-400 mt-1 block message-status" data-id="${data.id}">Sent</span>
+                    </div>
+                </div>
+            `;
+            messages.innerHTML += messageHtml;
+            messages.scrollTop = messages.scrollHeight;
+
+            if (!isCurrentUser) {
+                socket.emit('mark_read', {message_id: data.id, reader: username, sender: data.username});
+            }
+        });
+
+        socket.on('user_typing', function(data) {
+            const typingIndicator = document.getElementById('typing-indicator');
+            const typingText = document.getElementById('typing-text');
+            if (data.username === partner) {
+                if (data.is_typing) {
+                    typingText.textContent = `${partner} is typing...`;
+                    typingIndicator.classList.remove('hidden');
+                } else {
+                    typingIndicator.classList.add('hidden');
+                }
+            }
+        });
+
+        socket.on('message_read', function(data) {
+            const messageStatus = document.querySelector(`.message-status[data-id="${data.message_id}"]`);
+            if (messageStatus) {
+                messageStatus.textContent = 'Read';
+            }
+        });
+
+        socket.on('user_profile', function(data) {
+            document.getElementById('partner-avatar').src = data.avatar || '/static/default-avatar.png';
+            document.getElementById('partner-status').textContent = data.status_message || '';
+        });
+
+        socket.on('profile_updated', function(data) {
+            if (data.username === partner) {
+                document.getElementById('partner-avatar').src = data.avatar || '/static/default-avatar.png';
+                document.getElementById('partner-status').textContent = data.status_message || '';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users - Chat App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#1f2937',
+                        background: '#111827',
+                        text: '#e5e7eb',
+                    },
+                },
+            },
+            darkMode: 'class',
+        }
+    </script>
+</head>
+<body class="bg-background text-text">
+    <div class="container mx-auto max-w-2xl p-6 mt-10">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-primary">Chat App Users</h2>
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300">
+                    Logout
+                </button>
+            </form>
+        </div>
+        <div class="space-y-6">
+            <div class="bg-secondary p-4 rounded-lg">
+                <h3 class="text-xl font-semibold mb-3 text-primary">Available Users</h3>
+                <ul class="space-y-2">
+                    {% for user in available_users %}
+                        <li>
+                            <a href="{{ url_for('chat', partner=user['username']) }}" class="text-blue-400 hover:text-blue-300 transition duration-300">
+                                {{ user['username'] }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="text-gray-400">No available users</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="bg-secondary p-4 rounded-lg">
+                <h3 class="text-xl font-semibold mb-3 text-primary">Chatted Users</h3>
+                <ul class="space-y-2">
+                    {% for user in chatted_users %}
+                        <li>
+                            <a href="{{ url_for('chat', partner=user['username']) }}" class="text-blue-400 hover:text-blue-300 transition duration-300">
+                                {{ user['username'] }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="text-gray-400">No chatted users</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
