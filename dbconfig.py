@@ -8,7 +8,7 @@ MONGODB_URI = os.environ.get('MONGODB_URI', "YOUR-CONNECTION-STRING")
 def get_database():
     client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
     # Explicitly specify the database name
-    return client['realchat']
+    return client['YOUR-DATABASE-NAME']
 
 def ping_database():
     client = MongoClient(MONGODB_URI, server_api=ServerApi('1'))
