@@ -21,7 +21,6 @@ A real-time chat web application built with Flask, Flask-SocketIO, and Flask-MyS
 
 - [Flask](https://flask.palletsprojects.com/) - A micro web framework for Python.
 - [Flask-SocketIO](https://flask-socketio.readthedocs.io/) - Enables WebSocket communication.
-- [Flask-MySQLdb](https://flask-mysqldb.readthedocs.io/) - MySQL database integration with Flask.
 - [Python](https://www.python.org/) - The programming language used for the backend.
 
 ## Installation
